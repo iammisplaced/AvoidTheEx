@@ -1,1 +1,1 @@
-15, 20, 15, 400, 480, 320, 925, 385, 475, 28
+playerX 13, playerY 13, dateX 20, dateY 400, endX 700, endY 30, ex1Xstart 480, ex1Ystart 510, ex1Xend 690, ex1Yend 30, ex2Xstart 690, ex2Ystart 30, ex2Xend 480, ex2Yend 510, ex3Xstart 580, ex3Ystart 210, ex3Xend 580, ex3Yend 210
