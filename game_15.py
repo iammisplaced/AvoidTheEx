@@ -532,7 +532,7 @@ def showInstructions():
 		for event in pygame.event.get():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if rtfocus:
-					showTitle(screen)
+					system()
 			if event.type == pygame.QUIT:
 				getFPS()
 				sys.exit()
