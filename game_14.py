@@ -230,7 +230,7 @@ def getFPS():
 	print "\nfps: " + str(avg)
 
 def getDesign(setup):
-	text = open("lvl_" + str(3)  + ".txt")
+	text = open("lvl_" + str(setup)  + ".txt")
 	read = re.split('\W+', text.read())
 	design = [int(x) for x in read if x.isdigit()]
 	return design
