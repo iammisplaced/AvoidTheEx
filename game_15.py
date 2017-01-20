@@ -345,14 +345,13 @@ def play(skill, design):
 	#date
 	goal_x = design[2]
 	goal_y = design[3]
-	goal_r = 20
 	dateFrame = 0
 	dateFrameCourse = True
 
 	#end Location
 	end_x = design[4]
 	end_y = design[5]
-
+	goal_r = 20
 	#enemies
 	exes = []
 	for i in range(6, len(design[6:design.index(9999)]) + 6, 4):
@@ -391,7 +390,7 @@ def play(skill, design):
 				game.goto("lose")
 			for ex in exes:
 				ex.move()
-			if player.isAt(goal_x, goal_y) and not player.date:
+			if player.isAt(goal_x+30, goal_y+30, 30) and not player.date:
 				player.date = True
 				player.set_Size(35)
 			if player.date and player.isAt(end_x, end_y):
@@ -424,7 +423,8 @@ def play(skill, design):
 			else:
 				screen.blit(endLight, (end_x - goal_r, end_y - goal_r))
 			timeNum = (30+ int((pygame.time.get_ticks() - timeInit) / 1000))
-			yourTime = float( '%.3f' % (30.0 + ( float(pygame.time.get_ticks()) - float(timeInit) ) / 1000.0)) #### we limit the time to 3 decimal places
+			yourTime = float( '%.3f' % (30.0 + ( float(pygame.time.get_ticks()) - float(timeInit) ) / 1000.0)) 
+			#limit the time to 3 decimal places
 			timer = font.render( "7:" + str(timeNum), 1, WHITE)
 			screen.blit(timer, (520, 280))
 			
@@ -435,8 +435,8 @@ def play(skill, design):
 			screen.fill(BLACK)
 			screen.blit(loseScreen, (0, 0))
 			
-			global LIVES #!
-			LIVES -= 1 #!
+			global LIVES
+			LIVES -= 1
 			livesText = bfont.render('You have ' + str(LIVES) + ' second chances left', 1, RED) #!
 			screen.blit(livesText, (WIDTH/4, 3*HEIGHT/4)) #!
 			
@@ -518,13 +518,13 @@ def showInstructions():
 			
 			rtaltered = afont.render( "Return to title screen", True, WHITE ) ####WHITE
 			
-			screen.fill(BLACK, rtrect ) ####BLACK
+			screen.fill(BLACK, rtrect )
 			screen.blit(rtaltered, rtpos )
 			
 		else:
 			rtfocus = False
 			
-			screen.fill(BLACK, rtrect ) ####BLACK
+			screen.fill(BLACK, rtrect )
 			screen.blit(returnText, rtpos )
 
 		pygame.display.update()
