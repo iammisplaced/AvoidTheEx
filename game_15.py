@@ -90,13 +90,13 @@ class Player:
 		else:
 			screen.blit(playerPic[self.dir], (self.rect.x, self.rect.y))
 		#pygame.draw.rect(screen, WHITE, self.rect)
-	def isAt(self, x0, y0, err):
-		if math.fabs(self.rect.centerx - x0) < err and math.fabs(self.rect.centery - y0) <err:
+	def isAt(self, x0, y0, err = 0):
+		if math.hypot(self.rect.centerx - x0, self.rect.centery - y0) < err + self.rect.width*.8:
 			return True
 		return False
 	def isDead(self, exes):
 		for ex in exes:
-			if math.hypot(self.rect.centerx - ex.x, self.rect.centery - ex.y) < (ex.r*.7)+self.rect.width:
+			if self.isAt(ex.x, ex.y, ex.r*.65):
 			   return True
 		return False
 
@@ -139,7 +139,7 @@ def globals():
 	#define colors
 	global BLACK
 	BLACK = (0, 0, 0)
-	global WHITE 
+	global WHITE
 	WHITE= (255, 255, 255)
 	global RED
 	RED = (255, 0, 0)
@@ -391,10 +391,10 @@ def play(skill, design):
 				game.goto("lose")
 			for ex in exes:
 				ex.move()
-			if player.isAt(goal_x, goal_y, goal_r*(.7)+player.rect.width) and not player.date:
+			if player.isAt(goal_x, goal_y) and not player.date:
 				player.date = True
 				player.set_Size(35)
-			if player.date and player.isAt(end_x, end_y, goal_r*(.7)+player.rect.width):
+			if player.date and player.isAt(end_x, end_y):
 				game.goto("win")
 			
 			if timeNum == 59:
@@ -404,6 +404,7 @@ def play(skill, design):
 			screen.fill(BLACK)
 		 
 			# --- Drawing code
+			player.draw(screen)
 			for rect in MAP[:4]:
 				pygame.draw.rect( screen, BLACK, rect)
 			for rect in MAP[4:]:
@@ -429,8 +430,6 @@ def play(skill, design):
 			
 			livesText = afont.render('Second chances: ' + str(LIVES), 1, WHITE) #!
 			screen.blit(livesText, (0,0)) #!
-			
-			player.draw(screen)
 
 		elif game.cur == "lose":
 			screen.fill(BLACK)
