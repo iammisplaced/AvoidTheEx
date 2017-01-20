@@ -478,11 +478,11 @@ def play(skill, design):
 				prevHighScoreText[LEVEL-1] = str(prevHighScoreText[LEVEL-1])+'\n'
 				updateScoreFile(prevHighScoreText)
 
-			bestTimeText1 = bfont.render("%.3f" % bestTimeList[0], True, WHITE)
-			bestTimeText2 = bfont.render("%.3f" % bestTimeList[1], True, WHITE)
-			bestTimeText3 = bfont.render("%.3f" % bestTimeList[2], True, WHITE)
-			yourTimeText = cfont.render("%.3f" % yourTime, True, WHITE)
-			screen.blit(bestTimeText1, (WIDTH/2 + 50, HEIGHT/2 + 2) )
+			bestTimeText1 = bfont.render("7:" + "%.3f" % bestTimeList[0], True, WHITE)
+			bestTimeText2 = bfont.render("7:" + "%.3f" % bestTimeList[1], True, WHITE)
+			bestTimeText3 = bfont.render("7:" + "%.3f" % bestTimeList[2], True, WHITE)
+			yourTimeText = cfont.render("7:" + "%.3f" % yourTime, True, WHITE)
+			screen.blit(bestTimeText1, (WIDTH/2 + 40, HEIGHT/2 + 2) )
 			screen.blit(bestTimeText2, (WIDTH/2 + 40, HEIGHT/2 + 46) )
 			screen.blit(bestTimeText3, (WIDTH/2 + 40, HEIGHT/2 + 89) )
 			screen.blit(yourTimeText, (WIDTH/6, HEIGHT/2) )
