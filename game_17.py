@@ -23,9 +23,11 @@ class Player:
 	#controls player rules/art
 	def __init__(self, x, y, size, speed):
 		self.rect = pygame.Rect(x,y, size, size)
+		self.prevRect = pygame.Rect(x - speed,y - speed, size*2, size*2)
 		self.speed = int(speed)
 		self.date = 0
 		self.dir = 1
+		self.bounce = 0.0
 	def set_Size(self, size):
 		self.rect = pygame.Rect(self.rect.x, self.rect.y, size, size)
 	def collide(self):
@@ -33,35 +35,47 @@ class Player:
 			if rect.colliderect(self.rect):
 				return True# player is in at least 1 rect
 		return False #player is not in any rect
+	def move(self):
+		self.prevRect.x = self.rect.x -self.speed
+		self.prevRect.y = self.rect.y -self.speed
+		self.bounce += .1
 	def up(self):
+		self.move()
 		self.rect.move_ip(0, -1*self.speed)
 		if self.collide():
 			self.rect.move_ip(0, self.speed)
 		else:
 			self.dir = 2
 	def down(self):
+		self.move()
 		self.rect.move_ip(0, self.speed)
 		if self.collide():
 			self.rect.move_ip(0, -1*self.speed)
 		else:
-			self.dir = 3
+			self.dir = 2
 	def left(self):
+		self.move()
 		self.rect.move_ip(-1*self.speed, 0)
 		if self.collide():
 			self.rect.move_ip(self.speed, 0)
 		else:
 			self.dir = 0
 	def right(self):
+		self.move()
 		self.rect.move_ip(self.speed, 0)
 		if self.collide():
 			self.rect.move_ip(-1*self.speed, 0)
 		else:
-			self.dir = 1
+			self.dir = 0
+	def clean(self, screen):
+		screen.blit(mapPic, (self.prevRect.x, self.prevRect.y), self.prevRect )
 	def draw(self, screen):
+		if self.bounce > 1.9:
+			self.bounce = 0
 		if self.date:
-			screen.blit(playerwD[self.dir], (self.rect.x, self.rect.y))
+			screen.blit(playerwD[self.dir + int(self.bounce)], (self.rect.x, self.rect.y))
 		else:
-			screen.blit(playerList[self.dir], (self.rect.x, self.rect.y))
+			screen.blit(playerList[self.dir + int(self.bounce)], (self.rect.x, self.rect.y))
 		#pygame.draw.rect(screen, WHITE, self.rect)
 	def isAt(self, x0, y0, err = 0):
 		if math.hypot(self.rect.centerx - x0, self.rect.centery - y0) < err + self.rect.width*.8:
@@ -85,6 +99,9 @@ class Exes:
 		self.toEnd = True
 		self.speed = speed
 		self.r = int(radius)
+	def clean(self, screen):
+		prevRect = pygame.Rect(self.x - self.r*1.15 - self.speed, self.y -self.r*1.15 - self.speed, 3*self.r + 2*self.speed, 3*self.r + 2*self.speed)
+		screen.blit(mapPic, (self.x - self.r*1.15 - self.speed, self.y -self.r*1.15 - self.speed), prevRect )
 	def draw(self, screen):
 		screen.blit(exPic, (self.x - self.r*1.15, self.y -self.r*1.15), None, 0)
 	def move(self):
@@ -146,7 +163,7 @@ def globals():
 	global font
 	font = pygame.font.SysFont("monospace", 30)
 	global afont
-	afont = pygame.font.SysFont( "Helvetica", 20, bold=False )
+	afont = pygame.font.SysFont( "Helvetica", 20, bold= False)
 	global bfont
 	bfont = pygame.font.SysFont( "Helvetica", 40, bold=True )
 	global cfont
@@ -162,15 +179,18 @@ def globals():
 	loseScreen = pygame.image.load("YouLose.png").convert_alpha()
 	global winScreen
 	winScreen =  pygame.image.load("YouWin.png").convert_alpha()
-	'''global instr
+	global instr
 	instr = [pygame.image.load('instrLeft.png').convert_alpha(), pygame.image.load('instrRight.png').convert_alpha(), 
-	pygame.image.load('instrUp.png').convert_alpha(), pygame.image.load('instrDown.png').convert_alpha()]'''
+	pygame.image.load('instrUp.png').convert_alpha(), pygame.image.load('instrDown.png').convert_alpha(), 
+	pygame.image.load('instr1.png').convert_alpha(), pygame.image.load('instr2.png').convert_alpha(), pygame.image.load('instr3.png').convert_alpha()]
 	global exPic
 	exPic = pygame.image.load("Ex2.png").convert_alpha()
 	global mapPic
-	mapPic = pygame.image.load("ATEGameMapRD.png").convert_alpha()
+	mapPic = pygame.image.load("ATEGameMap.png").convert_alpha()
 	global endLight
 	endLight = pygame.image.load("Streetlight.png").convert_alpha()
+	global chance
+	chance = pygame.image.load("Chance.png").convert_alpha()
 	global playerList
 	playerList = [pygame.image.load('Player1.png').convert_alpha(),pygame.image.load('Player2.png').convert_alpha(), 
 	pygame.image.load('Player3.png').convert_alpha(), pygame.image.load('Player4.png').convert_alpha()]
@@ -341,8 +361,7 @@ def play(skill, design):
 	goal_x = design[2]
 	goal_y = design[3]
 	goal_rect = pygame.Rect(goal_x, goal_y, 48, 48)
-	dateFrame = 0
-	dateFrameCourse = True
+	frame = 0
 
 	#end Location
 	end_x = design[4]
@@ -363,6 +382,11 @@ def play(skill, design):
 
 	# Loop until the user clicks the close button.
 	done = False
+
+	screen.blit(mapPic, (0,0))
+	for i in range(LIVES):
+		screen.blit(chance, (20 + 40 * i, 13))
+	pygame.display.flip()
 
 	# -------- Main Program Loop -----------
 	while not done:
@@ -394,36 +418,31 @@ def play(skill, design):
 			
 			if timeNum == 59:
 				game.goto("lose")
-
-			# clear the screen to black
-			screen.fill(BLACK)
 		 
 			# --- Drawing code
-			screen.blit(mapPic, (0,0))
-			player.draw(screen)
-			'''for rect in MAP[4:]:
-				pygame.draw.rect( screen, BLUE, rect)'''
+			screen.blit(mapPic, (end_x-20, end_y-20), pygame.Rect(end_x-20, end_y-20, 30, 30) )
+			screen.blit(mapPic, (goal_x, goal_y), pygame.Rect(goal_x, goal_y, 50, 50) )
+			player.clean(screen)
+			for ex in exes:
+			   ex.clean(screen)
 			for ex in exes:
 			   ex.draw(screen)
+			if player.isAt(80, 13, 70):
+				for i in range(LIVES):
+					screen.blit(chance, (20 + 40 * i, 13))
+			player.draw(screen)
+			frame += .05
+			if frame > 1.8:
+				frame = 0
 			if not player.date:
-				screen.blit(datePic[dateFrame/10], (goal_x, goal_y))
-				if dateFrameCourse:
-					dateFrame += 1
-					if dateFrame == 19:
-						dateFrameCourse = False
-				else:
-					dateFrame -= 1
-					if dateFrame == 0:
-						dateFrameCourse = True
+				screen.blit(datePic[int(frame)], (goal_x, goal_y))
 			else:
-				screen.blit(endLight, (end_x - 20, end_y - 20))
+				screen.blit(endLight, (end_x - 20, end_y - 20), pygame.Rect(0 + 30 * int(frame),0,30,30))
 			timeNum = (30+ int((pygame.time.get_ticks() - timeInit) / 1000))
 			yourTime = float( '%.3f' % (30.0 + ( float(pygame.time.get_ticks()) - float(timeInit) ) / 1000.0)) #### we limit the time to 3 decimal places
 			timer = font.render( "7:" + str(timeNum), 1, RED)
-			screen.blit(timer, (520, 280))
-			
-			livesText = afont.render('Second chances: ' + str(LIVES), 1, BLACK) #!
-			screen.blit(livesText, (0,0)) #!
+			screen.blit(mapPic, (330, 205), pygame.Rect(330,205, 80, 80) )
+			screen.blit(timer, (330, 205))
 
 		elif game.cur == "lose":
 			mixer.music.load("slap.mp3")
@@ -493,45 +512,77 @@ def play(skill, design):
 		# --- Limit to 60 frames per second
 		global fpsList
 		fpsList.append(clock.get_fps())
-		clock.tick(60)
+		clock.tick(52)
 
 def showInstructions():
-	screen.fill((0,0,0))
-	#instructionsText = afont.render( "Instructions go here", True, CYAN ) ####CYAN
-	returnText = afont.render( "Return to title screen", True, CYAN ) ####CYAN
-	rtpos = (750,450)
-	screen.blit(instructionsText, (420,250) )
-	screen.blit(returnText, rtpos )
-	
+	textA = afont.render( "NEXT", True, CYAN )
+	textAlit = afont.render( "NEXT", True, WHITE )
+	textB = afont.render( "QUIT", True, CYAN )
+	textBlit = afont.render( "QUIT", True, WHITE )
+	buttonA = pygame.Rect(35, 448, 164, 66)
+	buttonB = pygame.Rect(762, 448, 164, 66)
+	tApos = getTextPos(buttonA, textA)
+	tBpos = getTextPos(buttonB, textB)
+	screen.fill(BLACK)
 	pygame.display.update()
 
 	direction = 0
 	
-	
-	rtfocus = False
+	go = False
+	tAfocus = False
+	tBfocus = False
 	while 1:
+		if go:
+			textA = afont.render( "Return Home", True, CYAN )
+			textAlit = afont.render( "Return Home", True, WHITE )
+			tApos = getTextPos(buttonA, textA)
 		mpos = pygame.mouse.get_pos()
-		rtrect = returnText.get_rect()
-		if mpos[0]>rtpos[0] and mpos[0]<rtpos[0]+rtrect[2] and mpos[1]>rtpos[1] and mpos[1]<rtpos[1]+rtrect[3]:
-			rtfocus = True
-			
-			rtaltered = afont.render( "Return to title screen", True, WHITE ) ####WHITE
-			
-			screen.fill(BLACK, rtrect )
-			screen.blit(rtaltered, rtpos )
-			
+		if buttonA.collidepoint(mpos) :
+			tAfocus = True
+		elif buttonB.collidepoint(mpos) :
+			tBfocus = True
 		else:
-			rtfocus = False
-			
-			screen.fill(BLACK, rtrect )
-			screen.blit(returnText, rtpos )
+			tAfocus = False
+			tBfocus = False
+
+		if not go:
+			if( pygame.key.get_pressed()[pygame.K_UP] != 0 ):
+					direction = 2
+			if( pygame.key.get_pressed()[pygame.K_DOWN] != 0 ):
+					direction = 3
+			if( pygame.key.get_pressed()[pygame.K_LEFT] != 0 ):
+					direction = 0
+			if( pygame.key.get_pressed()[pygame.K_RIGHT] != 0 ):
+					direction = 1
+
+		if not go:
+			screen.blit(instr[direction], (0,0))
+		else:
+			direction += .005
+			if direction > len(instr):
+				direction = 4
+			screen.blit(instr[int(direction)], (0,0))
+		if tAfocus:
+			screen.blit(textAlit, tApos)
+		else:
+			screen.blit(textA, tApos)
+		if tBfocus:
+			screen.blit(textBlit, tBpos)
+		else:
+			screen.blit(textB, tBpos)
 
 		pygame.display.update()
 			
 		for event in pygame.event.get():
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if rtfocus:
-					return
+				if tAfocus and not go:
+					go = True
+					direction = 4
+				elif tAfocus and go:
+					system()
+				elif tBfocus:
+					getFPS()
+					sys.exit()	
 			if event.type == pygame.QUIT:
 				getFPS()
 				sys.exit()
