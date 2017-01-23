@@ -268,10 +268,6 @@ def system():
 	skill = 1
 	setup = 1
 
-	#openingMusic.play()
-	mixer.music.load("track2.mp3")
-	mixer.music.play()
-
 	while 1:
 
 		mpos = pygame.mouse.get_pos()
@@ -591,6 +587,8 @@ def showInstructions():
 if __name__ == '__main__':
 	pygame.font.init()
 	mixer.init()
+	mixer.music.load("track2.mp3")
+	mixer.music.play()
 	globals()
 
 
