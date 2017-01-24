@@ -244,20 +244,24 @@ def system():
 	button3 = pygame.Rect(519, 448, 164, 66)
 	button4 = pygame.Rect(762, 448, 164, 66)
 
-	text1 = afont.render( "START", True, CYAN )
-	text1altered = afont.render( "START", True, WHITE )
+	text1 = afont.render( "Start", True, CYAN )
+	text1altered = afont.render( "Start", True, WHITE )
 	text2 = afont.render( "How to Play", True, CYAN )
 	text2altered = afont.render( "How to Play", True, WHITE )
-	text3 = afont.render( "QUIT", True, CYAN )
-	text3altered = afont.render( "QUIT", True, WHITE )
+	text3 = afont.render( "Quit", True, CYAN )
+	text3altered = afont.render( "Quit", True, WHITE )
+	text4 = afont.render( "Credits", True, CYAN )
+	text4altered = afont.render( "Credits", True, WHITE )
 
 	t1pos = getTextPos(button1, text1)
 	t2pos = getTextPos(button2, text2)
 	t3pos = getTextPos(button3, text3)
+	t4pos = getTextPos(button4, text4)
 
 	text1focus = False
 	text2focus = False
 	text3focus = False
+	text4focus = False
 
 	screen.fill(BLACK)
 	screen.blit(startScreen, (0,0) )
@@ -280,12 +284,13 @@ def system():
 				text1 = afont.render( "Replay level", True, CYAN ) #!
 				text1altered = afont.render( "Replay level", True, WHITE ) #!
 			t1pos = getTextPos(button1, text1)
-			text2 = afont.render( "", True, CYAN )
-			text2altered = afont.render( "", True, CYAN )
-		if win:
-			text2 = afont.render( "Next Level", True, CYAN )
-			text2altered = afont.render( "Next Level", True, WHITE )
+			text2 = afont.render( "Main Menu", True, CYAN )
+			text2altered = afont.render( "Main Menu", True, WHITE )
 			t2pos = getTextPos(button2, text2)
+		if win:
+			text1 = afont.render( "Next Level", True, CYAN )
+			text1altered = afont.render( "Next Level", True, WHITE )
+			t1pos = getTextPos(button1, text1)
 
 
 		if button1.collidepoint(mpos):
@@ -294,10 +299,13 @@ def system():
 			text2focus = True
 		elif button3.collidepoint(mpos):
 			text3focus = True
+		elif button4.collidepoint(mpos):
+			text4focus = True
 		else:
 			text1focus = False
 			text2focus = False
 			text3focus = False
+			text4focus = False
 		
 		if text1focus:
 			screen.blit(text1altered, t1pos)
@@ -311,6 +319,12 @@ def system():
 			screen.blit( text3altered, t3pos)
 		else:
 			screen.blit(text3, t3pos)
+		if text4focus:
+			if not played:
+				screen.blit( text4altered, t4pos)
+		else:
+			if not played:
+				screen.blit(text4, t4pos)
 
 		pygame.display.update()
 			
@@ -327,22 +341,28 @@ def system():
 							LEVEL = 1 #!
 							setup = 1
 							skill = 1
-					win = play(skill, getDesign(setup))
-					played = True
-				elif text2focus:
-					if win:
+					else:
 						skill += 1
 						if getDesign(setup)[(-1*skill)] == 9999:
 							skill = 1
 							setup += 1
 						global LEVEL #### need to call this or else it treats LEVEL as a local variable
 						LEVEL += 1 ####
-						win = play(skill, getDesign(setup))
-					elif not played: ####
+					win = play(skill, getDesign(setup))
+					played = True
+				elif text2focus:
+					if not played: ####
 						showInstructions()
+					else:
+						mixer.music.load("track2.wav")
+						mixer.music.play(-1)
+						system()
 				elif text3focus:
 					getFPS()
 					sys.exit()
+				elif text4focus:
+					if not played:
+						showCredits()
 
 			if event.type == pygame.QUIT:
 				getFPS()
@@ -583,12 +603,47 @@ def showInstructions():
 				getFPS()
 				sys.exit()
 
+def showCredits():
+	textB = afont.render( "Main Menu", True, CYAN )
+	textBlit = afont.render( "Main Menu", True, WHITE )
+	buttonB = pygame.Rect(762, 448, 164, 66)
+	tBpos = getTextPos(buttonB, textB)
+	screen.fill(BLACK)
+	pygame.display.update()
+
+	direction = 0
+	
+	tBfocus = False
+	while 1:
+		mpos = pygame.mouse.get_pos()
+		if buttonB.collidepoint(mpos) :
+			tBfocus = True
+		else:
+			tBfocus = False
+			
+#		screen.blit(instr[direction], (0,0))
+			
+		if tBfocus:
+			screen.blit(textBlit, tBpos)
+		else:
+			screen.blit(textB, tBpos)
+
+		pygame.display.update()
+			
+		for event in pygame.event.get():
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if tBfocus:
+					system()
+			if event.type == pygame.QUIT:
+				getFPS()
+				sys.exit()
+
 
 if __name__ == '__main__':
 	pygame.font.init()
 	mixer.init()
 	mixer.music.load("track2.wav")
-	mixer.music.play()
+	mixer.music.play(-1)
 	globals()
 
 
