@@ -73,6 +73,8 @@ class Player:
 	def draw(self, screen):
 		if self.bounce > 1.9:
 			self.bounce = 0
+		if LIVES == 1:
+			self.danger = 1
 		pygame.draw.rect(screen, (255*self.danger, 0, 180*abs(int(1 - self.danger))), self.rect,  1)
 		if self.date:
 			screen.blit(playerwD[self.dir + int(self.bounce)], (self.rect.x, self.rect.y))
@@ -278,7 +280,7 @@ def system():
 		mpos = pygame.mouse.get_pos()
 		
 		if played:
-			if LIVES == 0:
+			if LIVES <= 0:
 				text2 = afont.render( "Restart Game", True, CYAN )
 				text2altered = afont.render( "Restart Game", True, WHITE )
 			else:
@@ -356,7 +358,7 @@ def system():
 						if not win:
 							mixer.music.load("track3.mp3")
 							mixer.music.play(-1)
-							if LIVES == 0:
+							if LIVES <= 0:
 								global LIVES
 								LIVES = 3
 								global LEVEL
