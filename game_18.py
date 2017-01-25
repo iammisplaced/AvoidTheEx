@@ -23,7 +23,9 @@ class Player:
 	#controls player rules/art
 	def __init__(self, x, y, size, speed):
 		self.rect = pygame.Rect(x,y, size, size)
-		self.prevRect = pygame.Rect(x - speed,y - speed, size*3, size*3)
+		self.prevRect = pygame.Rect(x,y, size*2.5, size*2.5)
+		self.prevRect.centerx = self.rect.centerx
+		self.prevRect.centery = self.rect.centery
 		self.speed = int(speed)
 		self.date = 0
 		self.dir = 1
@@ -37,8 +39,8 @@ class Player:
 				return True# player is in at least 1 rect
 		return False #player is not in any rect
 	def move(self):
-		self.prevRect.x = self.rect.x -self.speed
-		self.prevRect.y = self.rect.y -self.speed
+		self.prevRect.centerx = self.rect.centerx
+		self.prevRect.centery = self.rect.centery
 		self.bounce += .05
 	def up(self):
 		self.move()
@@ -182,6 +184,8 @@ def globals():
 	loseScreen = pygame.image.load("YouLose.png").convert_alpha()
 	global winScreen
 	winScreen =  pygame.image.load("YouWin.png").convert_alpha()
+	global endScreen
+	endScreen =  pygame.image.load("FinalWin.png").convert_alpha()
 	global instr
 	instr = [pygame.image.load('instrLeft.png').convert_alpha(), pygame.image.load('instrRight.png').convert_alpha(), 
 	pygame.image.load('instrUp.png').convert_alpha(), pygame.image.load('instrDown.png').convert_alpha(), 
@@ -277,8 +281,8 @@ def system():
 		
 		if played:
 			if LIVES <= 0:
-				text2 = afont.render( "Restart Game", True, CYAN )
-				text2altered = afont.render( "Restart Game", True, WHITE )
+				text2 = afont.render( "Restart World", True, CYAN )
+				text2altered = afont.render( "Restart World", True, WHITE )
 			else:
 				text2 = afont.render( "Replay level", True, CYAN )
 				text2altered = afont.render( "Replay level", True, WHITE )
@@ -288,12 +292,12 @@ def system():
 			text1altered = afont.render( "", True, CYAN )
 			t3pos = getTextPos(button3, text3)
 		if win:
-			if LEVEL < 15:
+			if LEVEL < 14:
 				text1 = afont.render( "Next Level", True, CYAN )
 				text1altered = afont.render( "Next Level", True, WHITE )
 			else:
-				text2 = afont.render( "", True, CYAN )
-				text2altered = afont.render( "", True, WHITE )
+				text1 = afont.render( "Restart Game", True, CYAN )
+				text1altered = afont.render( "Restart Game", True, WHITE )
 		t1pos = getTextPos(button1, text1)
 		t2pos = getTextPos(button2, text2)
 
@@ -323,9 +327,6 @@ def system():
 			text2focus = False
 			text3focus = False
 			text4focus = False
-
-		if LEVEL == 15:
-			screen.fill(MAGENTA)
 		
 		if text1focus:
 			screen.blit(text1altered, t1pos)
@@ -349,26 +350,27 @@ def system():
 		for event in pygame.event.get():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if text1focus and LEVEL < 15:
-					#Start -- Next
+					#Start -- Next -- -- Restart
 					if win:
 						skill += 1
 						if getDesign(setup)[(-1*skill)] == 9999:
 							skill = 1
 							setup += 1
-							global LIVES
-							if LIVES < 3:
-								LIVES += 1
 						global LEVEL
 						LEVEL += 1
-						if LEVEL < 15:
-							win = play(skill, getDesign(setup))
+						if LEVEL == 15:
+							LEVEL = 1
+							skill = 1
+							setup = 1
+							LIVES = 3
+						win = play(skill, getDesign(setup))
 					elif not played:
 						mixer.music.load("track3.mp3")
 						mixer.music.play(-1)
 						played = True
 						win = play(skill, getDesign(setup))
 					text1focus = False
-				elif text2focus and LEVEL < 15:
+				elif text2focus:
 					#How to -- winReplay -- loseReplay -- Restart
 					if not played:
 						showInstructions()
@@ -380,8 +382,7 @@ def system():
 								global LIVES
 								LIVES = 3
 								global LEVEL
-								LEVEL = 1 
-								setup = 1
+								LEVEL = LEVEL - skill + 1
 								skill = 1
 						win = play(skill, getDesign(setup))
 					text2focus = False
@@ -436,7 +437,7 @@ def play(skill, design):
 	for i in range(LIVES):
 		screen.blit(chance, (20 + 40 * i, 13))
 	lText = bfont.render( "Level " + str(LEVEL), True, WHITE)
-	screen.blit(lText, (310, 150))
+	screen.blit(lText, (300, 150))
 
 
 	pygame.display.flip()
@@ -494,7 +495,7 @@ def play(skill, design):
 			timer = font.render( "7:" + str(timeNum), 1, RED)
 			screen.blit(mapPic, (330, 205), pygame.Rect(330,205, 80, 80) )
 			screen.blit(timer, (330, 205))
-			screen.blit(lText, (310, 150))
+			screen.blit(lText, (300, 150))
 
 		elif game.cur == "lose":
 			mixer.music.load("slap.mp3")
@@ -514,7 +515,10 @@ def play(skill, design):
 		
 		elif game.cur == "win":
 			screen.fill(BLACK)
-			screen.blit(winScreen, (0, 0))
+			if LEVEL == 14:
+				screen.blit(endScreen, (0,0))
+			else:
+				screen.blit(winScreen, (0, 0))
 			try:
 				bestTimeString = str(prevHighScoreText[LEVEL-1])
 				bestTimeList = []
@@ -552,9 +556,9 @@ def play(skill, design):
 			bestTimeText2 = bfont.render("7:" + "%.3f" % bestTimeList[1], True, WHITE)
 			bestTimeText3 = bfont.render("7:" + "%.3f" % bestTimeList[2], True, WHITE)
 			yourTimeText = cfont.render("7:" + "%.3f" % yourTime, True, WHITE)
-			screen.blit(bestTimeText1, (WIDTH/2 + 40, HEIGHT/2 + 2) )
-			screen.blit(bestTimeText2, (WIDTH/2 + 40, HEIGHT/2 + 46) )
-			screen.blit(bestTimeText3, (WIDTH/2 + 40, HEIGHT/2 + 89) )
+			screen.blit(bestTimeText1, (WIDTH/2 + 50, HEIGHT/2 - 13) )
+			screen.blit(bestTimeText2, (WIDTH/2 + 50, HEIGHT/2 + 31) )
+			screen.blit(bestTimeText3, (WIDTH/2 + 50, HEIGHT/2 + 74) )
 			screen.blit(yourTimeText, (WIDTH/6, HEIGHT/2) )
 
 			return True
@@ -566,13 +570,17 @@ def play(skill, design):
 		# --- Limit to 60 frames per second
 		global fpsList
 		fpsList.append(clock.get_fps())
-		clock.tick(60)
+		clock.tick(60/(1+adjust))
 
 def showInstructions():
 	textA = afont.render( "NEXT", True, CYAN )
 	textAlit = afont.render( "NEXT", True, WHITE )
 	buttonA = pygame.Rect(35, 448, 164, 66)
 	tApos = getTextPos(buttonA, textA)
+	textB = afont.render( "Main Menu", True, CYAN )
+	textBlit = afont.render( "Main Menu", True, WHITE )
+	buttonB = pygame.Rect(762, 448, 164, 66)
+	tBpos = getTextPos(buttonB, textB)
 	screen.fill(BLACK)
 	pygame.display.update()
 
@@ -582,14 +590,18 @@ def showInstructions():
 	tAfocus = False
 	while 1:
 		if go:
-			textA = afont.render( "Return Home", True, CYAN )
-			textAlit = afont.render( "Return Home", True, WHITE )
+			textA = afont.render( "Main Menu", True, CYAN )
+			textAlit = afont.render( "Main Menu", True, WHITE )
 			tApos = getTextPos(buttonA, textA)
 		mpos = pygame.mouse.get_pos()
 		if buttonA.collidepoint(mpos) :
 			tAfocus = True
 		else:
 			tAfocus = False
+		if buttonB.collidepoint(mpos) :
+			tBfocus = True
+		else:
+			tBfocus = False
 
 		if not go:
 			if( pygame.key.get_pressed()[pygame.K_UP] != 0 ):
@@ -603,6 +615,10 @@ def showInstructions():
 
 		if not go:
 			screen.blit(instr[direction], (0,0))
+			if tBfocus:
+				screen.blit(textBlit, tBpos)
+			else:
+				screen.blit(textB, tBpos)
 		else:
 			direction += .005
 			if direction > len(instr):
@@ -621,6 +637,8 @@ def showInstructions():
 					go = True
 					direction = 4
 				elif tAfocus and go:
+					system()
+				elif tBfocus and not go:
 					system()
 			if event.type == pygame.QUIT:
 				getFPS()
@@ -671,8 +689,8 @@ def main():
 	mixer.music.load("track2.mp3")
 	mixer.music.play(-1)
 	global LEVEL 
-	LEVEL = 1 
-	global LIVES 
+	LEVEL = 1
+	global LIVES
 	LIVES = 3
 	system()
 
