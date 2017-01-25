@@ -279,8 +279,8 @@ def system():
 		
 		if played:
 			if LIVES <= 0:
-				text2 = afont.render( "Restart Game", True, CYAN )
-				text2altered = afont.render( "Restart Game", True, WHITE )
+				text2 = afont.render( "Restart World", True, CYAN )
+				text2altered = afont.render( "Restart World", True, WHITE )
 			else:
 				text2 = afont.render( "Replay level", True, CYAN )
 				text2altered = afont.render( "Replay level", True, WHITE )
@@ -357,9 +357,6 @@ def system():
 						if getDesign(setup)[(-1*skill)] == 9999:
 							skill = 1
 							setup += 1
-							global LIVES
-							if LIVES < 3:
-								LIVES += 1
 						global LEVEL
 						LEVEL += 1
 						if LEVEL < 15:
@@ -382,8 +379,7 @@ def system():
 								global LIVES
 								LIVES = 3
 								global LEVEL
-								LEVEL = 1 
-								setup = 1
+								LEVEL = LEVEL - skill + 1
 								skill = 1
 						win = play(skill, getDesign(setup))
 					text2focus = False
@@ -588,8 +584,8 @@ def showInstructions():
 	tAfocus = False
 	while 1:
 		if go:
-			textA = afont.render( "Return Home", True, CYAN )
-			textAlit = afont.render( "Return Home", True, WHITE )
+			textA = afont.render( "Main Menu", True, CYAN )
+			textAlit = afont.render( "Main Menu", True, WHITE )
 			tApos = getTextPos(buttonA, textA)
 		mpos = pygame.mouse.get_pos()
 		if buttonA.collidepoint(mpos) :
