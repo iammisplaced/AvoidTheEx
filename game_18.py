@@ -23,7 +23,9 @@ class Player:
 	#controls player rules/art
 	def __init__(self, x, y, size, speed):
 		self.rect = pygame.Rect(x,y, size, size)
-		self.prevRect = pygame.Rect(x - speed,y - speed, size*1.5, size*1.5)
+		self.prevRect = pygame.Rect(x,y, size*2, size*2)
+		self.prevRect.centerx = self.rect.centerx
+		self.prevRect.centery = self.rect.centery
 		self.speed = int(speed)
 		self.date = 0
 		self.dir = 1
@@ -37,8 +39,8 @@ class Player:
 				return True# player is in at least 1 rect
 		return False #player is not in any rect
 	def move(self):
-		self.prevRect.x = self.rect.x -self.speed
-		self.prevRect.y = self.rect.y -self.speed
+		self.prevRect.centerx = self.rect.centerx
+		self.prevRect.centery = self.rect.centery
 		self.bounce += .05
 	def up(self):
 		self.move()
@@ -73,6 +75,8 @@ class Player:
 	def draw(self, screen):
 		if self.bounce > 1.9:
 			self.bounce = 0
+		if LIVES == 1:
+			self.danger = 1
 		pygame.draw.rect(screen, (255*self.danger, 0, 180*abs(int(1 - self.danger))), self.rect,  1)
 		if self.date:
 			screen.blit(playerwD[self.dir + int(self.bounce)], (self.rect.x, self.rect.y))
@@ -125,10 +129,6 @@ class Exes:
 
 def globals():
 	#gameplay
-	global LEVEL ####
-	LEVEL = 1 ####
-	global LIVES #!
-	LIVES = 3
 	global adjust
 	adjust = 0
 
@@ -233,7 +233,7 @@ def getFPS():
 	print "\nfps: " + str(sum(fpsList)/len(fpsList))
 
 def getDesign(setup):
-	text = open("lvl_" + str(setup+3)  + ".txt")
+	text = open("lvl_" + str(setup+5)  + ".txt")
 	read = re.split('\W+', text.read())
 	design = [int(x) for x in read if x.isdigit()]
 	return design
@@ -278,7 +278,7 @@ def system():
 		mpos = pygame.mouse.get_pos()
 		
 		if played:
-			if LIVES == 0:
+			if LIVES <= 0:
 				text2 = afont.render( "Restart Game", True, CYAN )
 				text2altered = afont.render( "Restart Game", True, WHITE )
 			else:
@@ -288,27 +288,46 @@ def system():
 			text3altered = afont.render( "Main Menu", True, WHITE )
 			text1 = afont.render( "", True, CYAN )
 			text1altered = afont.render( "", True, CYAN )
-			t2pos = getTextPos(button2, text2)
 			t3pos = getTextPos(button3, text3)
 		if win:
-			text1 = afont.render( "Next Level", True, CYAN )
-			text1altered = afont.render( "Next Level", True, WHITE )
+			if LEVEL < 15:
+				text1 = afont.render( "Next Level", True, CYAN )
+				text1altered = afont.render( "Next Level", True, WHITE )
+			else:
+				text2 = afont.render( "", True, CYAN )
+				text2altered = afont.render( "", True, WHITE )
 		t1pos = getTextPos(button1, text1)
+		t2pos = getTextPos(button2, text2)
 
 
 		if button1.collidepoint(mpos):
 			text1focus = True
+			text2focus = False
+			text3focus = False
+			text4focus = False
 		elif button2.collidepoint(mpos):
+			text1focus = False
 			text2focus = True
+			text3focus = False
+			text4focus = False
 		elif button3.collidepoint(mpos):
+			text1focus = False
+			text2focus = False
 			text3focus = True
+			text4focus = False
 		elif button4.collidepoint(mpos):
+			text1focus = False
+			text2focus = False
+			text3focus = False
 			text4focus = True
 		else:
 			text1focus = False
 			text2focus = False
 			text3focus = False
 			text4focus = False
+
+		if LEVEL == 15:
+			screen.fill(MAGENTA)
 		
 		if text1focus:
 			screen.blit(text1altered, t1pos)
@@ -331,7 +350,7 @@ def system():
 			
 		for event in pygame.event.get():
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if text1focus:
+				if text1focus and LEVEL < 15:
 					#Start -- Next
 					if win:
 						skill += 1
@@ -343,20 +362,23 @@ def system():
 								LIVES += 1
 						global LEVEL
 						LEVEL += 1
+						if LEVEL < 15:
+							win = play(skill, getDesign(setup))
 					elif not played:
 						mixer.music.load("track3.mp3")
 						mixer.music.play(-1)
 						played = True
-					win = play(skill, getDesign(setup))
-				elif text2focus:
-					#How to -- Replay -- Replay -- Restart
+						win = play(skill, getDesign(setup))
+					text1focus = False
+				elif text2focus and LEVEL < 15:
+					#How to -- winReplay -- loseReplay -- Restart
 					if not played:
 						showInstructions()
 					else:
 						if not win:
 							mixer.music.load("track3.mp3")
 							mixer.music.play(-1)
-							if LIVES == 0:
+							if LIVES <= 0:
 								global LIVES
 								LIVES = 3
 								global LEVEL
@@ -364,8 +386,10 @@ def system():
 								setup = 1
 								skill = 1
 						win = play(skill, getDesign(setup))
+					text2focus = False
 				elif text3focus:
 					# Credits -- Main Menu
+					text3focus = False
 					if not played:
 						credits()
 					else:
@@ -457,9 +481,8 @@ def play(skill, design):
 			   ex.clean(screen)
 			for ex in exes:
 			   ex.draw(screen)
-			if player.isAt(80, 13, 70):
-				for i in range(LIVES):
-					screen.blit(chance, (20 + 40 * i, 13))
+			for i in range(LIVES):
+				screen.blit(chance, (20 + 40 * i, 13))
 			player.draw(screen)
 			frame += .05
 			if frame > 1.8:
@@ -481,9 +504,12 @@ def play(skill, design):
 			screen.fill(BLACK)
 			screen.blit(loseScreen, (0, 0))
 			
-			global LIVES #!
-			LIVES -= 1 #!
-			livesText = bfont.render('You have ' + str(LIVES) + ' second chances left', 1, RED) #!
+			global LIVES
+			LIVES -= 1
+			if LIVES == 1:
+				livesText = bfont.render('You have ' + str(LIVES) + ' second chance left', 1, RED)
+			else:
+				livesText = bfont.render('You have ' + str(LIVES) + ' second chances left', 1, RED)
 			screen.blit(livesText, (WIDTH/4, 3*HEIGHT/4)) #!
 			
 			return False
@@ -608,18 +634,53 @@ def credits():
 	clock = pygame.time.Clock()
 	fps = []
 	c = 0
-	while c < 300:
-		fps.append(clock.get_fps())
+	text = afont.render( "Main Menu", True, CYAN )
+	textlit = afont.render( "Main Menu", True, WHITE )
+	button = pygame.Rect(35, 448, 164, 66)
+	tpos = getTextPos(button, text)
+	tfocus = False
+	leave = False
+	credits = [pygame.image.load("Credit2.png").convert_alpha(), pygame.image.load("Credit4.png").convert_alpha(), pygame.image.load("Credit5.png").convert_alpha()]
+	while c < 440:
+		mpos = pygame.mouse.get_pos()
+		if button.collidepoint(mpos) :
+			tfocus = True
+		else:
+			tfocus = False
+		screen.blit(credits[c/150], (0,0))
+		screen.blit(text, tpos)
+		if tfocus:
+			screen.blit(textlit, tpos)
+		pygame.display.update()
 		c += 1
+		for event in pygame.event.get():
+			if event.type == pygame.MOUSEBUTTONDOWN and tfocus:
+				leave = True
+			if event.type == pygame.QUIT:
+				sys.exit()
+		if leave:
+			break
+		fps.append(clock.get_fps())			
 		clock.tick(60)
-	if sum(fps)/len(fps) < 40:
+	print sum(fps)/len(fps)
+	if sum(fps)/len(fps) < 30:
 		global adjust
 		adjust = 1
+	print( "\nADJUST: " + str(adjust))
 	system()
 
 def main():
 	mixer.music.load("track2.mp3")
 	mixer.music.play(-1)
+	global LEVEL 
+	LEVEL = 1 
+	global LIVES 
+	LIVES = 3
+	system()
+
+if __name__ == '__main__':
+	pygame.font.init()
+	mixer.init()
 	globals()
 	try: ####
 		prevHighScore = file('highscore.txt','r') #### reads in any previous text in the file
@@ -634,9 +695,4 @@ def main():
 	newHighScore = file('highscore.txt','w') #### allows us to write to it
 	for line in prevHighScoreText:
 		newHighScore.write(line) #### rewrites the old high score to the file to preserve it if it is not beaten	
-	system()
-
-if __name__ == '__main__':
-	pygame.font.init()
-	mixer.init()
 	main()
