@@ -190,6 +190,9 @@ def globals():
 	instr = [pygame.image.load('instrLeft.png').convert_alpha(), pygame.image.load('instrRight.png').convert_alpha(), 
 	pygame.image.load('instrUp.png').convert_alpha(), pygame.image.load('instrDown.png').convert_alpha(), 
 	pygame.image.load('instr1.png').convert_alpha(), pygame.image.load('instr2.png').convert_alpha(), pygame.image.load('instr3.png').convert_alpha()]
+	global cScene
+	cScene = [pygame.image.load('cutscene0.png').convert_alpha(), pygame.image.load('cutscene1.png').convert_alpha(), 
+	pygame.image.load('cutscene2.png').convert_alpha(), pygame.image.load('cutscene3.png').convert_alpha()]
 	global exPic
 	exPic = pygame.image.load("Ex2.png").convert_alpha()
 	global mapPic
@@ -251,8 +254,8 @@ def system():
 	text1altered = afont.render( "START", True, WHITE )
 	text2 = afont.render( "How to Play", True, CYAN )
 	text2altered = afont.render( "How to Play", True, WHITE )
-	text3 = afont.render( "Calibrate/Credits", False, CYAN )
-	text3altered = afont.render( "Calibrate/Credits", False, WHITE )
+	text3 = afont.render( "CREDITS", True, CYAN )
+	text3altered = afont.render( "CREDITS", True, WHITE )
 	text4 = afont.render( "QUIT", True, CYAN )
 	text4altered = afont.render( "QUIT", True, WHITE )
 
@@ -365,9 +368,10 @@ def system():
 							LIVES = 3
 						win = play(skill, getDesign(setup))
 					elif not played:
+						played = True
+						cutscene()
 						mixer.music.load("track3.mp3")
 						mixer.music.play(-1)
-						played = True
 						win = play(skill, getDesign(setup))
 					text1focus = False
 				elif text2focus:
@@ -645,45 +649,69 @@ def showInstructions():
 				sys.exit()
 
 def credits():
-	screen.fill(BLACK)
-	pygame.display.update()
-	clock = pygame.time.Clock()
-	fps = []
-	c = 0
 	text = afont.render( "Main Menu", True, CYAN )
 	textlit = afont.render( "Main Menu", True, WHITE )
 	button = pygame.Rect(35, 448, 164, 66)
 	tpos = getTextPos(button, text)
 	tfocus = False
-	leave = False
 	credits = [pygame.image.load("Credit2.png").convert_alpha(), pygame.image.load("Credit4.png").convert_alpha(), pygame.image.load("Credit5.png").convert_alpha()]
-	while c < 440:
+	c = 0
+	leave = False
+	clock = pygame.time.Clock()
+	while c < 220:
 		mpos = pygame.mouse.get_pos()
 		if button.collidepoint(mpos) :
 			tfocus = True
 		else:
 			tfocus = False
-		screen.blit(credits[c/150], (0,0))
+		screen.blit(credits[c/75], (0,0))
 		screen.blit(text, tpos)
 		if tfocus:
 			screen.blit(textlit, tpos)
 		pygame.display.update()
 		c += 1
 		for event in pygame.event.get():
-			if event.type == pygame.MOUSEBUTTONDOWN and tfocus:
+			if event.type == pygame.MOUSEBUTTONDOWN:
 				leave = True
 			if event.type == pygame.QUIT:
 				sys.exit()
 		if leave:
 			break
+		clock.tick(30)
+	system()
+
+def cutscene():
+	text = bfont.render( "Click to Skip", True, WHITE)
+	screen.fill(BLACK)
+	pygame.display.update()
+	clock = pygame.time.Clock()
+	fps = []
+	c = 0
+	leave = False
+	while c < 400:
+		screen.fill(BLACK)
+		screen.blit(cScene[c/100], ((WIDTH - 412)/2, (HEIGHT - 276)/2))
+		screen.blit(text, ((WIDTH - 412)/2, 500))
+		pygame.display.update()
+		c += 1
+		
+		for event in pygame.event.get():
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				leave = True
+			if event.type == pygame.QUIT:
+				sys.exit()
+		if leave:
+			break
+
 		fps.append(clock.get_fps())			
 		clock.tick(60)
+
 	print sum(fps)/len(fps)
 	if sum(fps)/len(fps) < 30:
 		global adjust
 		adjust = 1
 	print( "\nADJUST: " + str(adjust))
-	system()
+	return
 
 def main():
 	mixer.music.load("track2.mp3")
