@@ -233,7 +233,7 @@ def getFPS():
 	print "\nfps: " + str(sum(fpsList)/len(fpsList))
 
 def getDesign(setup):
-	text = open("lvl_" + str(setup+3)  + ".txt")
+	text = open("lvl_" + str(setup)  + ".txt")
 	read = re.split('\W+', text.read())
 	design = [int(x) for x in read if x.isdigit()]
 	return design
@@ -608,13 +608,39 @@ def credits():
 	clock = pygame.time.Clock()
 	fps = []
 	c = 0
-	while c < 300:
-		fps.append(clock.get_fps())
+	text = afont.render( "Main Menu", True, CYAN )
+	textlit = afont.render( "Main Menu", True, WHITE )
+	button = pygame.Rect(35, 448, 164, 66)
+	tpos = getTextPos(button, text)
+	tfocus = False
+	leave = False
+	credits = [pygame.image.load("Credit2.png").convert_alpha(), pygame.image.load("Credit4.png").convert_alpha(), pygame.image.load("Credit5.png").convert_alpha()]
+	while c < 440:
+		mpos = pygame.mouse.get_pos()
+		if button.collidepoint(mpos) :
+			tfocus = True
+		else:
+			tfocus = False
+		screen.blit(credits[c/150], (0,0))
+		screen.blit(text, tpos)
+		if tfocus:
+			screen.blit(textlit, tpos)
+		pygame.display.update()
 		c += 1
+		for event in pygame.event.get():
+			if event.type == pygame.MOUSEBUTTONDOWN and tfocus:
+				leave = True
+			if event.type == pygame.QUIT:
+				sys.exit()
+		if leave:
+			break
+		fps.append(clock.get_fps())			
 		clock.tick(60)
-	if sum(fps)/len(fps) < 40:
+	print sum(fps)/len(fps)
+	if sum(fps)/len(fps) < 30:
 		global adjust
 		adjust = 1
+	print( "\nADJUST: " + str(adjust))
 	system()
 
 def main():
