@@ -23,7 +23,7 @@ class Player:
 	#controls player rules/art
 	def __init__(self, x, y, size, speed):
 		self.rect = pygame.Rect(x,y, size, size)
-		self.prevRect = pygame.Rect(x,y, size*2, size*2)
+		self.prevRect = pygame.Rect(x,y, size*2.5, size*2.5)
 		self.prevRect.centerx = self.rect.centerx
 		self.prevRect.centery = self.rect.centery
 		self.speed = int(speed)
@@ -438,7 +438,7 @@ def play(skill, design):
 	for i in range(LIVES):
 		screen.blit(chance, (20 + 40 * i, 13))
 	lText = bfont.render( "Level " + str(LEVEL), True, WHITE)
-	screen.blit(lText, (310, 150))
+	screen.blit(lText, (300, 150))
 
 
 	pygame.display.flip()
@@ -496,7 +496,7 @@ def play(skill, design):
 			timer = font.render( "7:" + str(timeNum), 1, RED)
 			screen.blit(mapPic, (330, 205), pygame.Rect(330,205, 80, 80) )
 			screen.blit(timer, (330, 205))
-			screen.blit(lText, (310, 150))
+			screen.blit(lText, (300, 150))
 
 		elif game.cur == "lose":
 			mixer.music.load("slap.mp3")
@@ -568,13 +568,17 @@ def play(skill, design):
 		# --- Limit to 60 frames per second
 		global fpsList
 		fpsList.append(clock.get_fps())
-		clock.tick(60)
+		clock.tick(60/(1+adjust))
 
 def showInstructions():
 	textA = afont.render( "NEXT", True, CYAN )
 	textAlit = afont.render( "NEXT", True, WHITE )
 	buttonA = pygame.Rect(35, 448, 164, 66)
 	tApos = getTextPos(buttonA, textA)
+	textB = afont.render( "Main Menu", True, CYAN )
+	textBlit = afont.render( "Main Menu", True, WHITE )
+	buttonB = pygame.Rect(762, 448, 164, 66)
+	tBpos = getTextPos(buttonB, textB)
 	screen.fill(BLACK)
 	pygame.display.update()
 
@@ -592,6 +596,10 @@ def showInstructions():
 			tAfocus = True
 		else:
 			tAfocus = False
+		if buttonB.collidepoint(mpos) :
+			tBfocus = True
+		else:
+			tBfocus = False
 
 		if not go:
 			if( pygame.key.get_pressed()[pygame.K_UP] != 0 ):
@@ -605,6 +613,10 @@ def showInstructions():
 
 		if not go:
 			screen.blit(instr[direction], (0,0))
+			if tBfocus:
+				screen.blit(textBlit, tBpos)
+			else:
+				screen.blit(textB, tBpos)
 		else:
 			direction += .005
 			if direction > len(instr):
@@ -623,6 +635,8 @@ def showInstructions():
 					go = True
 					direction = 4
 				elif tAfocus and go:
+					system()
+				elif tBfocus and not go:
 					system()
 			if event.type == pygame.QUIT:
 				getFPS()
