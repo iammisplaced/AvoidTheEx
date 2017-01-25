@@ -23,7 +23,7 @@ class Player:
 	#controls player rules/art
 	def __init__(self, x, y, size, speed):
 		self.rect = pygame.Rect(x,y, size, size)
-		self.prevRect = pygame.Rect(x - speed,y - speed, size*1.5, size*1.5)
+		self.prevRect = pygame.Rect(x - speed,y - speed, size*3, size*3)
 		self.speed = int(speed)
 		self.date = 0
 		self.dir = 1
@@ -300,11 +300,23 @@ def system():
 
 		if button1.collidepoint(mpos):
 			text1focus = True
+			text2focus = False
+			text3focus = False
+			text4focus = False
 		elif button2.collidepoint(mpos):
+			text1focus = False
 			text2focus = True
+			text3focus = False
+			text4focus = False
 		elif button3.collidepoint(mpos):
+			text1focus = False
+			text2focus = False
 			text3focus = True
+			text4focus = False
 		elif button4.collidepoint(mpos):
+			text1focus = False
+			text2focus = False
+			text3focus = False
 			text4focus = True
 		else:
 			text1focus = False
@@ -355,6 +367,7 @@ def system():
 						mixer.music.play(-1)
 						played = True
 						win = play(skill, getDesign(setup))
+					text1focus = False
 				elif text2focus and LEVEL < 15:
 					#How to -- winReplay -- loseReplay -- Restart
 					if not played:
@@ -371,8 +384,10 @@ def system():
 								setup = 1
 								skill = 1
 						win = play(skill, getDesign(setup))
+					text2focus = False
 				elif text3focus:
 					# Credits -- Main Menu
+					text3focus = False
 					if not played:
 						credits()
 					else:
@@ -487,9 +502,12 @@ def play(skill, design):
 			screen.fill(BLACK)
 			screen.blit(loseScreen, (0, 0))
 			
-			global LIVES #!
-			LIVES -= 1 #!
-			livesText = bfont.render('You have ' + str(LIVES) + ' second chances left', 1, RED) #!
+			global LIVES
+			LIVES -= 1
+			if LIVES == 1:
+				livesText = bfont.render('You have ' + str(LIVES) + ' second chance left', 1, RED)
+			else:
+				livesText = bfont.render('You have ' + str(LIVES) + ' second chances left', 1, RED)
 			screen.blit(livesText, (WIDTH/4, 3*HEIGHT/4)) #!
 			
 			return False
@@ -652,9 +670,9 @@ def credits():
 def main():
 	mixer.music.load("track2.mp3")
 	mixer.music.play(-1)
-	global LEVEL ####
-	LEVEL = 1 ####
-	global LIVES #!
+	global LEVEL 
+	LEVEL = 1 
+	global LIVES 
 	LIVES = 3
 	system()
 
