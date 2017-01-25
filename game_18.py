@@ -355,7 +355,7 @@ def system():
 						mixer.music.play(-1)
 						played = True
 						win = play(skill, getDesign(setup))
-				elif text2focus and LEVEL < 2:
+				elif text2focus and LEVEL < 15:
 					#How to -- winReplay -- loseReplay -- Restart
 					if not played:
 						showInstructions()
