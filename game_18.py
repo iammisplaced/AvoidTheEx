@@ -706,7 +706,6 @@ def cutscene():
 		clock.tick(60)
 
 	print sum(fps)/len(fps[10:])
-	print fps
 	if sum(fps)/len(fps[10:]) > 40:
 		global adjust
 		adjust = 0
