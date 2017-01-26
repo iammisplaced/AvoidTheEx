@@ -184,10 +184,15 @@ def globals():
 	loseScreen = pygame.image.load("YouLose.png").convert_alpha()
 	global winScreen
 	winScreen =  pygame.image.load("YouWin.png").convert_alpha()
+	global endScreen
+	endScreen =  pygame.image.load("FinalWin.png").convert_alpha()
 	global instr
 	instr = [pygame.image.load('instrLeft.png').convert_alpha(), pygame.image.load('instrRight.png').convert_alpha(), 
 	pygame.image.load('instrUp.png').convert_alpha(), pygame.image.load('instrDown.png').convert_alpha(), 
 	pygame.image.load('instr1.png').convert_alpha(), pygame.image.load('instr2.png').convert_alpha(), pygame.image.load('instr3.png').convert_alpha()]
+	global cScene
+	cScene = [pygame.image.load('cutscene0.png').convert_alpha(), pygame.image.load('cutscene1.png').convert_alpha(), 
+	pygame.image.load('cutscene2.png').convert_alpha(), pygame.image.load('cutscene3.png').convert_alpha()]
 	global exPic
 	exPic = pygame.image.load("Ex2.png").convert_alpha()
 	global mapPic
@@ -249,8 +254,8 @@ def system():
 	text1altered = afont.render( "START", True, WHITE )
 	text2 = afont.render( "How to Play", True, CYAN )
 	text2altered = afont.render( "How to Play", True, WHITE )
-	text3 = afont.render( "Calibrate/Credits", False, CYAN )
-	text3altered = afont.render( "Calibrate/Credits", False, WHITE )
+	text3 = afont.render( "CREDITS", True, CYAN )
+	text3altered = afont.render( "CREDITS", True, WHITE )
 	text4 = afont.render( "QUIT", True, CYAN )
 	text4altered = afont.render( "QUIT", True, WHITE )
 
@@ -290,12 +295,12 @@ def system():
 			text1altered = afont.render( "", True, CYAN )
 			t3pos = getTextPos(button3, text3)
 		if win:
-			if LEVEL < 15:
+			if LEVEL < 14:
 				text1 = afont.render( "Next Level", True, CYAN )
 				text1altered = afont.render( "Next Level", True, WHITE )
 			else:
-				text2 = afont.render( "", True, CYAN )
-				text2altered = afont.render( "", True, WHITE )
+				text1 = afont.render( "Restart Game", True, CYAN )
+				text1altered = afont.render( "Restart Game", True, WHITE )
 		t1pos = getTextPos(button1, text1)
 		t2pos = getTextPos(button2, text2)
 
@@ -325,9 +330,6 @@ def system():
 			text2focus = False
 			text3focus = False
 			text4focus = False
-
-		if LEVEL == 15:
-			screen.fill(MAGENTA)
 		
 		if text1focus:
 			screen.blit(text1altered, t1pos)
@@ -351,7 +353,7 @@ def system():
 		for event in pygame.event.get():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if text1focus and LEVEL < 15:
-					#Start -- Next
+					#Start -- Next -- -- Restart
 					if win:
 						skill += 1
 						if getDesign(setup)[(-1*skill)] == 9999:
@@ -359,15 +361,20 @@ def system():
 							setup += 1
 						global LEVEL
 						LEVEL += 1
-						if LEVEL < 15:
-							win = play(skill, getDesign(setup))
+						if LEVEL == 15:
+							LEVEL = 1
+							skill = 1
+							setup = 1
+							LIVES = 3
+						win = play(skill, getDesign(setup))
 					elif not played:
+						played = True
+						cutscene()
 						mixer.music.load("track3.mp3")
 						mixer.music.play(-1)
-						played = True
 						win = play(skill, getDesign(setup))
 					text1focus = False
-				elif text2focus and LEVEL < 15:
+				elif text2focus:
 					#How to -- winReplay -- loseReplay -- Restart
 					if not played:
 						showInstructions()
@@ -512,7 +519,10 @@ def play(skill, design):
 		
 		elif game.cur == "win":
 			screen.fill(BLACK)
-			screen.blit(winScreen, (0, 0))
+			if LEVEL == 14:
+				screen.blit(endScreen, (0,0))
+			else:
+				screen.blit(winScreen, (0, 0))
 			try:
 				bestTimeString = str(prevHighScoreText[LEVEL-1])
 				bestTimeList = []
@@ -550,9 +560,9 @@ def play(skill, design):
 			bestTimeText2 = bfont.render("7:" + "%.3f" % bestTimeList[1], True, WHITE)
 			bestTimeText3 = bfont.render("7:" + "%.3f" % bestTimeList[2], True, WHITE)
 			yourTimeText = cfont.render("7:" + "%.3f" % yourTime, True, WHITE)
-			screen.blit(bestTimeText1, (WIDTH/2 + 40, HEIGHT/2 + 2) )
-			screen.blit(bestTimeText2, (WIDTH/2 + 40, HEIGHT/2 + 46) )
-			screen.blit(bestTimeText3, (WIDTH/2 + 40, HEIGHT/2 + 89) )
+			screen.blit(bestTimeText1, (WIDTH/2 + 50, HEIGHT/2 - 13) )
+			screen.blit(bestTimeText2, (WIDTH/2 + 50, HEIGHT/2 + 31) )
+			screen.blit(bestTimeText3, (WIDTH/2 + 50, HEIGHT/2 + 74) )
 			screen.blit(yourTimeText, (WIDTH/6, HEIGHT/2) )
 
 			return True
@@ -639,52 +649,76 @@ def showInstructions():
 				sys.exit()
 
 def credits():
-	screen.fill(BLACK)
-	pygame.display.update()
-	clock = pygame.time.Clock()
-	fps = []
-	c = 0
 	text = afont.render( "Main Menu", True, CYAN )
 	textlit = afont.render( "Main Menu", True, WHITE )
 	button = pygame.Rect(35, 448, 164, 66)
 	tpos = getTextPos(button, text)
 	tfocus = False
-	leave = False
 	credits = [pygame.image.load("Credit2.png").convert_alpha(), pygame.image.load("Credit4.png").convert_alpha(), pygame.image.load("Credit5.png").convert_alpha()]
-	while c < 440:
+	c = 0
+	leave = False
+	clock = pygame.time.Clock()
+	while c < 220:
 		mpos = pygame.mouse.get_pos()
 		if button.collidepoint(mpos) :
 			tfocus = True
 		else:
 			tfocus = False
-		screen.blit(credits[c/150], (0,0))
+		screen.blit(credits[c/75], (0,0))
 		screen.blit(text, tpos)
 		if tfocus:
 			screen.blit(textlit, tpos)
 		pygame.display.update()
 		c += 1
 		for event in pygame.event.get():
-			if event.type == pygame.MOUSEBUTTONDOWN and tfocus:
+			if event.type == pygame.MOUSEBUTTONDOWN:
 				leave = True
 			if event.type == pygame.QUIT:
 				sys.exit()
 		if leave:
 			break
+		clock.tick(30)
+	system()
+
+def cutscene():
+	text = bfont.render( "Click to Skip", True, WHITE)
+	screen.fill(BLACK)
+	pygame.display.update()
+	clock = pygame.time.Clock()
+	fps = []
+	c = 0
+	global adjust
+	adjust = 1
+	while c < 400:
+		screen.fill(BLACK)
+		screen.blit(cScene[c/100], ((WIDTH - 412)/2, (HEIGHT - 276)/2))
+		screen.blit(text, ((WIDTH - 412)/2, 480))
+		pygame.display.update()
+		c += 1
+		
+		for event in pygame.event.get():
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				return
+			if event.type == pygame.QUIT:
+				sys.exit()
+
 		fps.append(clock.get_fps())			
 		clock.tick(60)
-	print sum(fps)/len(fps)
-	if sum(fps)/len(fps) < 30:
+
+	print sum(fps)/len(fps[10:])
+	print fps
+	if sum(fps)/len(fps[10:]) > 40:
 		global adjust
-		adjust = 1
+		adjust = 0
 	print( "\nADJUST: " + str(adjust))
-	system()
+	return
 
 def main():
 	mixer.music.load("track2.mp3")
 	mixer.music.play(-1)
 	global LEVEL 
-	LEVEL = 1 
-	global LIVES 
+	LEVEL = 1
+	global LIVES
 	LIVES = 3
 	system()
 
